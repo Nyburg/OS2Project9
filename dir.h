@@ -11,6 +11,9 @@
 #define DIR_ENTRY_NAME_OFFSET 2
 
 #define ROOT_INODE_NUM 0
+#define ROOT_DIR_ENTRY_COUNT 2
+#define DIR_ENTRY_DOT "."
+#define DIR_ENTRY_DOT_DOT ".."
 
 #define INODE_FLAG_UNKNOWN 0
 #define INODE_FLAG_FILE 1

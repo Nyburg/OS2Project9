@@ -285,12 +285,12 @@ static int test_mkfs(void)
     mkfs();
 
     bread(1, block);
-    CTEST_ASSERT(block[0] == 0);
+    CTEST_ASSERT(block[0] == 1);
 
     bread(2, block);
-    CTEST_ASSERT(block[0] == 0x7f);
+    CTEST_ASSERT(block[0] == 0xff);
 
-    CTEST_ASSERT(alloc() == 7);
+    CTEST_ASSERT(alloc() == 8);
 
     CTEST_ASSERT(image_close() == 0);
 
