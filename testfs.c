@@ -4,6 +4,7 @@
 #include "image.h"
 #include "inode.h"
 #include "mkfs.h"
+#include "dir.h"
 
 #include <string.h>
 #include <unistd.h>
@@ -282,6 +283,7 @@ static int test_mkfs(void)
 
     CTEST_ASSERT(image_open(TEST_IMAGE, 1) >= 0);
 
+    incore_free_all();
     mkfs();
 
     bread(1, block);
@@ -291,6 +293,64 @@ static int test_mkfs(void)
     CTEST_ASSERT(block[0] == 0xff);
 
     CTEST_ASSERT(alloc() == 8);
+
+    CTEST_ASSERT(image_close() == 0);
+
+    unlink(TEST_IMAGE);
+
+    return 0;
+}
+
+static int test_directory_open_close(void)
+{
+    struct directory *dir;
+
+    CTEST_ASSERT(image_open(TEST_IMAGE, 1) >= 0);
+
+    incore_free_all();
+    mkfs();
+
+    dir = directory_open(ROOT_INODE_NUM);
+
+    CTEST_ASSERT(dir != NULL);
+    CTEST_ASSERT(dir->inode != NULL);
+    CTEST_ASSERT(dir->inode->inode_num == ROOT_INODE_NUM);
+    CTEST_ASSERT(dir->offset == 0);
+
+    directory_close(dir);
+
+    CTEST_ASSERT(image_close() == 0);
+
+    unlink(TEST_IMAGE);
+
+    return 0;
+}
+
+static int test_directory_get_root_entries(void)
+{
+    struct directory *dir;
+    struct directory_entry ent;
+
+    CTEST_ASSERT(image_open(TEST_IMAGE, 1) >= 0);
+
+    incore_free_all();
+    mkfs();
+
+    dir = directory_open(ROOT_INODE_NUM);
+
+    CTEST_ASSERT(dir != NULL);
+
+    CTEST_ASSERT(directory_get(dir, &ent) == 0);
+    CTEST_ASSERT(ent.inode_num == ROOT_INODE_NUM);
+    CTEST_ASSERT(strcmp(ent.name, DIR_ENTRY_DOT) == 0);
+
+    CTEST_ASSERT(directory_get(dir, &ent) == 0);
+    CTEST_ASSERT(ent.inode_num == ROOT_INODE_NUM);
+    CTEST_ASSERT(strcmp(ent.name, DIR_ENTRY_DOT_DOT) == 0);
+
+    CTEST_ASSERT(directory_get(dir, &ent) == -1);
+
+    directory_close(dir);
 
     CTEST_ASSERT(image_close() == 0);
 
@@ -314,6 +374,8 @@ int main(void)
     CTEST_RUN(test_ialloc);
     CTEST_RUN(test_alloc);
     CTEST_RUN(test_mkfs);
+    CTEST_RUN(test_directory_open_close);
+    CTEST_RUN(test_directory_get_root_entries);
 
     if (failures == 0) {
         printf("All tests passed\n");
