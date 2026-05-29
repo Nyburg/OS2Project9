@@ -6,7 +6,7 @@ ARFLAGS = rcs
 LIB = libvvsfs.a
 TARGET = testfs
 
-LIB_OBJS = image.o block.o free.o inode.o mkfs.o pack.o dir.o
+LIB_OBJS = image.o block.o free.o inode.o mkfs.o pack.o dir.o ls.o
 TEST_OBJS = testfs.o
 
 .PHONY: all test clean pristine
@@ -42,6 +42,9 @@ testfs.o: testfs.c image.h block.h free.h inode.h mkfs.h dir.h ctest.h
 
 dir.o: dir.c dir.h block.h inode.h pack.h
 	$(CC) $(CFLAGS) -c dir.c
+
+ls.o: ls.c ls.h dir.h
+	$(CC) $(CFLAGS) -c ls.c
 
 test: $(TARGET)
 	./$(TARGET)
